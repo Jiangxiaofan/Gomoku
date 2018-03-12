@@ -1,6 +1,6 @@
 import json
 import random
-BOARD_SIZE = 15
+BOARD_SIZE = 8
 
 # 解析读入的JSON
 full_input = json.loads(input())
