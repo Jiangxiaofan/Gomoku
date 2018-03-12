@@ -1,5 +1,5 @@
 import json
-BOARD_SIZE = 15
+BOARD_SIZE = 8
 
 class Gomoku(object):
     def __init__(self):
