@@ -14,9 +14,9 @@ COUNTER_SIZE = 40
 TILE_SIZE = 50
 COUNTER_PADDING = 5
 FPS = 40
-
-WINDOWWIDTH = TILE_SIZE * 8
-WINDOWHEIGHT = TILE_SIZE * 8
+BOARD_SIZE = 15
+WINDOWWIDTH = TILE_SIZE * BOARD_SIZE
+WINDOWHEIGHT = TILE_SIZE * BOARD_SIZE
 
 class Engine(object):
     def __init__(self):
@@ -48,8 +48,8 @@ class Engine(object):
         the_board = pygame.Rect(0, 0, WINDOWWIDTH, WINDOWHEIGHT)
         self.surface.blit(self.resources['board'], the_board)
 
-        for x in range(0, 8):
-            for y in range(0, 8):
+        for x in range(BOARD_SIZE):
+            for y in range(BOARD_SIZE):
                 player = self.game.board[x][y]
                 counter = pygame.Rect(x * TILE_SIZE + COUNTER_PADDING, y * TILE_SIZE + COUNTER_PADDING, COUNTER_SIZE, COUNTER_SIZE)
 
