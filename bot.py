@@ -1,5 +1,6 @@
 import json
 import random
+BOARD_SIZE = 15
 
 # 解析读入的JSON
 full_input = json.loads(input())
@@ -11,7 +12,7 @@ else:
 # 分析自己收到的输入和自己过往的输出，并恢复状态
 all_requests = full_input["requests"]
 all_responses = full_input["responses"]
-board = [[0 for x in range(8)] for y in range(8)]
+board = [[0 for x in range(BOARD_SIZE)] for y in range(BOARD_SIZE)]
 raw = json.loads(all_requests[0])
 if raw['x'] == raw['y'] == -1:
     val = 1
@@ -34,8 +35,8 @@ if x != -1 and y != -1:
 
 # TODO: 作出决策并输出
 all_moves = []
-for x in range(8):
-    for y in range(8):
+for x in range(BOARD_SIZE):
+    for y in range(BOARD_SIZE):
         if board[x][y] == 0:
             all_moves.append((x, y))
 x, y = random.choice(all_moves)
