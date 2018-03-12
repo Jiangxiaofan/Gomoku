@@ -1,11 +1,11 @@
 import json
-
+BOARD_SIZE = 15
 
 class Gomoku(object):
     def __init__(self):
         super(Gomoku, self).__init__()
         self.player = 1
-        self.board = [[0 for x in range(8)] for y in range(8)]
+        self.board = [[0 for x in range(BOARD_SIZE)] for y in range(BOARD_SIZE)]
         self.requests = [list(), list()]
         self.responses = [list(), list()]
         self.requests[0].append(json.dumps({"x":-1, "y":-1}))
@@ -37,7 +37,7 @@ class Gomoku(object):
         return
 
     def board_full(self):
-        return all(self.board[x][y] != 0 for x in range(8) for y in range(8))
+        return all(self.board[x][y] != 0 for x in range(BOARD_SIZE) for y in range(BOARD_SIZE))
     
     def check_winner(self, x, y):
         for direction in ((0,1),(1,-1),(1,0),(1,1)):
@@ -46,7 +46,7 @@ class Gomoku(object):
                 for j in range(1, 5):
                     row = x + i * j * direction[0]
                     col = y + i * j * direction[1]
-                    if row < 0 or row > 7 or col < 0 or col > 7:
+                    if row < 0 or row > BOARD_SIZE - 1 or col < 0 or col > BOARD_SIZE - 1:
                         break
                     if self.board[row][col] == self.board[x][y]:
                         cnt += 1
