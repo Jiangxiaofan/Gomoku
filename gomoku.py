@@ -18,9 +18,11 @@ class Gomoku(object):
 
     def perform_move(self, move):
         x, y = move
-        if self.board[x][y] != 0:
+        if 0 <= x < 15 and 0 <= y < 15 and self.board[x][y] == 0:
+            self.board[x][y] = self.player
+        else:
             raise Exception("Illegal move at {}, {}".format(x, y))
-        self.board[x][y] = self.player
+        
         
         my_action = {"x": x, "y": y}
         self.responses[self.player-1].append(my_action)

@@ -6,54 +6,7 @@ import time
 BOARD_SIZE = 15
 board = [[0 for x in range(BOARD_SIZE)] for y in range(BOARD_SIZE)]
 episodes = 0
-
-        
-class Node(object):
-    def __init__(self, action=None, parent=None, actions=None):
-        self.action = action
-        self.parent = parent
-        self.actions = actions
-        self.children = []
-        self.wins = 0
-        self.visits = 1
-
-    def ucb_child(self):
-        return max(self.children,
-                   key=lambda x: x.wins/x.visits + sqrt(2*log(self.visits-1)/x.visits))
-
-    def most_visit_child(self):
-        return max(self.children, key=lambda x: x.visits)
-
-    def update(self, reward):
-        self.wins += reward
-        self.visits += 1
-
-def on_board(x, y):
-    return 0 <= x < BOARD_SIZE and 0 <= y < BORAD_SIZE
-
-def position_taken(grid, x, y):
-    if on_board(x, y) and grid[x][y] != 0:
-        return True
-    return False
-
-def adjacent(grid, x, y, stone):
-    if grid[x][y] != 0:
-        return False
-    for i, j in ((0,1),(1,-1),(1,0),(1,1)
-                 (0,-1),(-1,1),(-1,0),(-1,-1)):
-        if position_taken(grid, x+i, y+j):
-            return True
-    return False
-    
-def get_all_moves(grid, stone):
-    all_moves = []
-    for x in range(15):
-        for y in range(15):
-            if adjacent(grid, x, y, stone):
-                all_moves.append((x, y))
-    if len(all_moves) == 0:
-        return [(x, y) for x in range(7, 9) for y in range(7, 9)]
-    return all_moves
+df = 0.9
 
 def board_full(grid):
     return all(grid[x][y] != 0 for x in range(BOARD_SIZE) for y in range(BOARD_SIZE))
@@ -83,6 +36,86 @@ def terminal_state(grid, x, y):
     if board_full(grid):
         return 1
     return 0
+
+class State(object):
+    def __init__(self, ):
+        self.player = 1
+        self.board = [[0 for x in range(BOARD_SIZE)] for y in range(BOARD_SIZE)]
+        return
+
+    def do_move(x, y):
+        self.board[x][y] = self.player
+        self.player = 3 - self.player
+
+    def check_winner(x, y):
+        for direction in ((0,1),(1,-1),(1,0),(1,1)):
+            cnt = 1
+            for i in (-1, 1):
+                for j in range(1, 5):
+                    row = x + i * j * direction[0]
+                    col = y + i * j * direction[1]
+                    if row < 0 or row > BOARD_SIZE - 1 or col < 0 or col > BOARD_SIZE - 1:
+                        break
+                    if self.board[row][col] == self.board[x][y]:
+                        cnt += 1
+                    else:
+                        break
+            if cnt >= 5:
+                return True
+        return False
+    
+    def is_terminal(x, y):
+        if self.check_winner(x, y):
+            return self.player
+        
+class Node(object):
+    def __init__(self, action=None, parent=None, actions=None):
+        self.action = action
+        self.parent = parent
+        self.actions = actions
+        self.children = []
+        self.wins = 0
+        self.visits = 0
+
+    def ucb_child(self):
+        return max(self.children,
+                   key=lambda x: x.wins/x.visits + sqrt(2*log(self.visits-1)/x.visits))
+
+    def highest_reward_child(self):
+        return max(self.children, key=lambda x: x.wins/x.visits)
+    def most_visit_child(self):
+        return max(self.children, key=lambda x: x.visits)
+
+    def update(self, reward):
+        self.wins += reward
+        self.visits += 1
+
+def on_board(x, y):
+    return 0 <= x < BOARD_SIZE and 0 <= y < BOARD_SIZE
+
+def position_taken(grid, x, y):
+    if on_board(x, y) and grid[x][y] != 0:
+        return True
+    return False
+
+def adjacent(grid, x, y, stone):
+    if grid[x][y] != 0:
+        return False
+    for i, j in ((0,1),(1,-1),(1,0),(1,1),
+                 (0,-1),(-1,1),(-1,0),(-1,-1)):
+        if position_taken(grid, x+i, y+j):
+            return True
+    return False
+    
+def get_all_moves(grid, stone):
+    all_moves = []
+    for x in range(15):
+        for y in range(15):
+            if adjacent(grid, x, y, stone):
+                all_moves.append((x, y))
+    if len(all_moves) == 0:
+        return [(x, y) for x in range(7, 9) for y in range(7, 9)]
+    return all_moves
 
 def loop(root, stone, x, y):
     grid = [board[_][:] for _ in range(15)]
@@ -119,17 +152,18 @@ def loop(root, stone, x, y):
         reward = 1 if stone != leaf_stone else -1
     while root:
         root.update(reward)
-        reward = -reward
+        reward = -df*reward
         root = root.parent
 
 def uct_search(stone, x, y):
     global episodes
-    end = time.time() + 10
+    end = time.time() + 3
     root = Node(actions=get_all_moves(board, stone))
+    root.update(0)
     while time.time() < end:
         loop(root, stone, x, y)
         episodes += 1
-    return root.most_visit_child().action
+    return root.highest_reward_child().action
 
 def place_at(x, y, stone):
     if x >= 0 and y >= 0:

@@ -51,6 +51,18 @@ class Engine(object):
             self.surface.blit(self.resources['white'], counter)
 
         pygame.display.update()
+
+    def human_input(self):
+        while True:
+            for event in pygame.event.get():
+                if event.type == MOUSEBUTTONDOWN:
+                    x, y = event.pos
+                    x = int(x/TILE_SIZE)
+                    y = int(y/TILE_SIZE)
+                    if 0 <= x < 15 and 0 <= y < 15 and self.game.board[x][y] == 0:
+                        return x, y
+                elif event.type == QUIT:
+                    quit()
         
     def start(self, loop_cnt, bots):
         self.start_up()
@@ -84,12 +96,16 @@ class Engine(object):
             quit()
      
     def game_loop(self, bots, turn):
+        keyboard_input = list()
         while True:
             for event in pygame.event.get():
                 if event.type == QUIT:
                     quit()
             program = bots[turn ^ (self.game.player - 1)]
-            move = self.communicate(program)
+            if len(program) == 1 and program[0] == 'human':
+                move = self.human_input()
+            else:
+                move = self.communicate(program)
             winner, stones = self.game.perform_move(move)
             self.render(move)
             if winner:
@@ -104,7 +120,7 @@ class Engine(object):
             self.main_clock.tick(FPS)
         return turn ^ (winner - 1)
 
-    def communicate(self, program):
+    def communicate(self, program):    
         p = Popen(program, shell=True, stdin=PIPE,
                   stdout=PIPE, universal_newlines=True)
         full_input = json.dumps({"requests": self.game.get_requests(),
@@ -121,6 +137,9 @@ if __name__ == '__main__':
     bots = (sys.argv[2], sys.argv[3])
     commands = []
     for program in bots:
+        if program == 'human':
+            commands.append([program])
+            continue
         postfix = program.split('.')[-1]
         if postfix == 'py':
             commands.append(['python', program])
